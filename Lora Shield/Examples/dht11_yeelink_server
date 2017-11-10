@@ -1,0 +1,158 @@
+#include <Process.h>
+#include <Console.h>
+#include <SPI.h>
+#include <RH_RF95.h>
+
+#define BAUDRATE 115200
+// Singleton instance of the radio driver
+RH_RF95 rf95;
+float frequency = 868.0;
+char buf[RH_RF95_MAX_MESSAGE_LEN];
+
+#define APIKEY        "fab652cb3d89f753602d77e4d856be2e"                  // replace your pachube api key here
+ #define DEVICEID      "361233"                     // Device ID
+ //#define SENSORID_HUMIDITY "412984"                //Sensorid ID for Humidity
+ #define SENSORID_TEMPERATURE "412980"            //Sensorid ID for Temperature
+ #define USERAGENT     "dragino"           // user agent is the project name
+
+
+
+
+// set up net client info:
+
+const unsigned long postingInterval = 60000;  //delay between updates to emoncms.com
+unsigned long lastRequest = 0;      // when you last made a request
+String dataStringTemp = ",";
+
+
+
+
+void setup() {
+
+  Bridge.begin(BAUDRATE);
+  Console.begin();
+  
+  while(!Console);    // wait for Network Console to open
+  Console.println("DHT11 Testing is start!");
+   if (!rf95.init())
+    Console.println("init failed");
+  // Setup ISM frequency
+  rf95.setFrequency(frequency);
+  // Setup Power,dBm
+  rf95.setTxPower(13);
+  // Defaults BW Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
+  Console.print("Listening on frequency: ");
+  Console.println(frequency);
+
+  
+
+}
+
+
+void loop() {
+  
+  long now = millis();
+  if (now - lastRequest >= postingInterval) {
+    updateData();
+    sendData();
+    lastRequest = now;
+    
+  }
+    if (rf95.available())
+  // if (rf95.waitAvailableTimeout(2000))
+  {
+    // Should be a message for us now   
+    uint8_t len = sizeof(buf);
+    if (rf95.recv(buf, &len))
+    {
+      
+      RH_RF95::printBuffer("request: ", buf, len);
+      //Console.print("Humidity(%): ");          // Printing humidity in serial port
+      Console.print("Temperature(C): ");        // Printing temperature in serial port
+      Console.println((char*)buf);
+      Console.print("RSSI: ");
+      Console.println(rf95.lastRssi(), DEC);
+      
+      // Send a reply
+      uint8_t data[] = "Thanks for sending me the message";
+      rf95.send(data, sizeof(data));
+      rf95.waitPacketSent();
+      Console.println("Sent a reply");
+     
+    }
+     else
+    {
+      //Console.println("recv failed");
+    }
+  }
+}
+
+
+
+void updateData() {
+
+  // convert the readings to a String to send it:
+
+  dataStringTemp = "{\"value\":";
+  dataStringTemp += buf;
+  dataStringTemp += "}";
+}
+
+
+
+// this method makes a HTTP connection to the server:
+
+void sendData() {
+
+  // form the string for the API header parameter:
+
+  String apiString = "U-ApiKey: ";
+  apiString += APIKEY;
+  // form the string for the URL parameter:
+  String url = "http://api.yeelink.net/v1.0/";
+  // String url = "http://api.yeelink.net/v1.1/";  
+  url += "device/";
+  //url += DEVICEID;
+  url += 361233;
+  url += "/sensor/";
+  //url += SENSORID_TEMPERATURE;
+   url += 412980;
+ //  url += 412984;
+  url += "/datapoints";
+  // Send the HTTP PUT request
+
+
+
+  // Is better to declare the Process here, so when the
+
+  // sendData function finishes the resources are immediately
+
+  // released. Declaring it global works too, BTW.
+
+  Process yeelink;
+  Console.print("\n\nSending data... ");
+  yeelink.begin("curl");
+  yeelink.addParameter("--request");
+  yeelink.addParameter("POST");
+  yeelink.addParameter("--data-binary");
+  yeelink.addParameter(dataStringTemp);
+  yeelink.addParameter("--header");
+  yeelink.addParameter(apiString);
+  yeelink.addParameter(url);
+  yeelink.run();
+  Console.println("done!");
+
+
+
+  // If there's incoming data from the net connection,
+
+  // send it out the Console:
+
+  while (yeelink.available()>0) {
+    char c = yeelink.read();
+    Console.write(c);
+  }
+
+
+
+}
