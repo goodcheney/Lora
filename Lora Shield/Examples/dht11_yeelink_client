@@ -1,0 +1,114 @@
+/*
+  LoRa Simple Client for Arduino :
+  Support Devices: LoRa Shield + Arduino 
+  
+  Example sketch showing how to create a simple messageing client, 
+  with the RH_RF95 class. RH_RF95 class does not provide for addressing or
+  reliability, so you should only use RH_RF95 if you do not need the higher
+  level messaging abilities.
+
+  It is designed to work with the other example LoRa Simple Server
+
+  modified 16 11 2016
+  by Edwin Chen <support@dragino.com>
+  Dragino Technology Co., Limited
+*/
+#include <dht.h>
+#include <SPI.h>
+#include <RH_RF95.h>
+dht DHT;
+#define DHT11_PIN A0
+String datastring1="";            //Declare a string to store the temperautre data
+//String datastring2="";        //Declare a string to store the humidity data
+String datastring3="";        //Declare a string to concatenate humidity or temperature data
+
+// Singleton instance of the radio driver
+RH_RF95 rf95;
+float frequency = 868.0;
+
+char dht_info[50] = {"\0"};
+char dht_hum[50] = {"\0"};
+char dht_tem[50]= {"\0"}; 
+
+float info;
+char  b =",";
+
+void setup() 
+{
+    Serial.begin(9600);
+  //Serial.begin(115200);
+  while (!Serial) ; // Wait for serial port to be available
+  Serial.println("DHT11 Testing is starting now");
+  if (!rf95.init())
+    Serial.println("init failed");
+  // Setup ISM frequency
+  rf95.setFrequency(frequency);
+  // Setup Power,dBm
+  //rf95.setSpreadingFactor(9);
+ // rf95.setSignalBandwidth(125E3);
+ // rf95.setCodingRate4(8);
+  rf95.setTxPower(13);
+  // Defaults after init are 434.0MHz, 13dBm, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
+}
+
+void dhtRead()
+{
+    
+      double  temperature = DHT.read11(DHT11_PIN);    //Temperature detection
+     //double  humidity = DHT.read11(DHT11_PIN);        //Humidity detection
+   
+  
+}
+void dhtWrite()
+{
+      //Convert the read float array to a string array
+     
+     datastring1 +=dtostrf(DHT.temperature,2,1,dht_tem);        
+   // datastring2 +=dtostrf(DHT.humidity,2,1,dht_hum);   
+     datastring3 +=dtostrf(info,2,1,dht_info);
+    
+    // memcpy(dht_info,dht_hum,strlen(dht_hum));
+     memcpy(dht_info,dht_tem,strlen(dht_tem));
+     
+}
+
+void loop()
+{
+     dhtRead();
+    dhtWrite();
+  Serial.println("Sending to LoRa Server");
+  // Send a message to LoRa Server
+
+
+  rf95.send(dht_info, sizeof(dht_info));
+  
+  rf95.waitPacketSent();
+  // Now wait for a reply
+  uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
+  uint8_t len = sizeof(buf);
+  Serial.println((char)dht_info);
+
+  if (rf95.waitAvailableTimeout(3000))
+  { 
+    // Should be a reply message for us now   
+    if (rf95.recv(buf, &len))
+   {
+      Serial.print("got reply: ");
+      Serial.println((char*)buf);
+      Serial.print("RSSI: ");
+      Serial.println(rf95.lastRssi(), DEC);    
+    }
+    else
+    {
+      Serial.println("recv failed");
+      rf95.send(dht_info, strlen((char*)dht_info));
+    }
+  }
+  else
+  {
+    Serial.println("No reply, is LoRa server running?");
+    rf95.send(dht_info, strlen((char*)dht_info));//resend data
+  }
+  delay(5000);
+}
+
