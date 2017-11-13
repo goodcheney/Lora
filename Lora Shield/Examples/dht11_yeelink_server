@@ -43,6 +43,7 @@ void setup() {
   // Defaults BW Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
   Console.print("Listening on frequency: ");
   Console.println(frequency);
+  Console.println("LoRa Gateway Example  --");
 
   
 
@@ -65,10 +66,21 @@ void loop() {
     uint8_t len = sizeof(buf);
     if (rf95.recv(buf, &len))
     {
-      
+       Console.print("Get LoRa Packet: ");
+            for (int i = 0; i < len; i++)
+
+            {
+                Console.print(buf[i],HEX);
+                Console.print(" ");
+
+            }
+
+            Console.println();
+            
       RH_RF95::printBuffer("request: ", buf, len);
-      //Console.print("Humidity(%): ");          // Printing humidity in serial port
-      Console.print("Temperature(C): ");        // Printing temperature in serial port
+      
+      Console.print("Humidity(%): ");          // Printing humidity in serial port
+      //Console.print("Temperature(C): ");        // Printing temperature in serial port
       Console.println((char*)buf);
       Console.print("RSSI: ");
       Console.println(rf95.lastRssi(), DEC);
