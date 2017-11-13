@@ -18,8 +18,8 @@
 #include <RH_RF95.h>
 dht DHT;
 #define DHT11_PIN A0
-String datastring1="";            //Declare a string to store the temperautre data
-//String datastring2="";        //Declare a string to store the humidity data
+//String datastring1="";            //Declare a string to store the temperautre data
+String datastring2="";        //Declare a string to store the humidity data
 String datastring3="";        //Declare a string to concatenate humidity or temperature data
 
 // Singleton instance of the radio driver
@@ -66,8 +66,8 @@ void setup()
 void dhtRead()
 {
     
-      double  temperature = DHT.read11(DHT11_PIN);    //Temperature detection
-     //double  humidity = DHT.read11(DHT11_PIN);        //Humidity detection
+     // double  temperature = DHT.read11(DHT11_PIN);    //Temperature detection
+      double  humidity = DHT.read11(DHT11_PIN);        //Humidity detection
    
   
 }
@@ -75,8 +75,8 @@ void dhtWrite()
 {
       //Convert the read float array to a string array
      
-     datastring1 +=dtostrf(DHT.temperature,2,1,dht_tem);        
-   // datastring2 +=dtostrf(DHT.humidity,2,1,dht_hum);   
+    // datastring1 +=dtostrf(DHT.temperature,2,1,dht_tem);        
+     datastring2 +=dtostrf(DHT.humidity,2,1,dht_hum);   
      datastring3 +=dtostrf(info,2,1,dht_info);
     
     // memcpy(dht_info,dht_hum,strlen(dht_hum));
@@ -95,7 +95,7 @@ void loop()
     Serial.println(" The humidity(%): ");
    // Serial.println(" The temperature(C): ");
     Serial.print(dht_hum);
-    Serial.print(dht_tem);
+   // Serial.print(dht_tem);
     Serial.println(" ");
     count++;
     char data[50] = {0};
@@ -106,6 +106,9 @@ void loop()
     data[2] = node_id[2] ;
     data[4] = dht_hum[1];
     data[5] = dht_hum[2];
+   // data[6] = dht_tem[1];
+   // data[7] = dth_tem[2];
+    
     Serial.print("Data to be sent: ");
     int i;
     for(i = 0;i < dataLength; i++)
