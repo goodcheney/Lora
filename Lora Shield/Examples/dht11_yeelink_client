@@ -25,6 +25,7 @@ String datastring3="";        //Declare a string to concatenate humidity or temp
 // Singleton instance of the radio driver
 RH_RF95 rf95;
 float frequency = 868.0;
+unsigned int count = 1;
 
 char dht_info[50] = {"\0"};
 char dht_hum[50] = {"\0"};
