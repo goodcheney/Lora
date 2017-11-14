@@ -80,8 +80,8 @@ void dhtWrite()
      datastring2 +=dtostrf(DHT.humidity,2,1,dht_hum);   
      datastring3 +=dtostrf(info,2,1,dht_info);
     
-    // memcpy(dht_info,dht_hum,strlen(dht_hum));
-     memcpy(dht_info,dht_tem,strlen(dht_tem));
+     memcpy(dht_info,dht_hum,strlen(dht_hum));
+    // memcpy(dht_info,dht_tem,strlen(dht_tem));
      
 }
 
