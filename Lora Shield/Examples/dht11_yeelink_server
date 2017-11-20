@@ -79,8 +79,8 @@ void loop() {
             
       RH_RF95::printBuffer("request: ", buf, len);
       
-      Console.print("Humidity(%): ");          // Printing humidity in serial port
-      //Console.print("Temperature(C): ");        // Printing temperature in serial port
+      //Console.print("Humidity(%): ");          // Printing humidity in serial port
+      Console.print("Temperature(C): ");        // Printing temperature in serial port
       Console.println((char*)buf);
       Console.print("RSSI: ");
       Console.println(rf95.lastRssi(), DEC);
