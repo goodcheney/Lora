@@ -19,18 +19,18 @@
 dht DHT;
 #define DHT11_PIN A0
 //String datastring1="";            //Declare a string to store the temperautre data
-String datastring2="";        //Declare a string to store the humidity data
-String datastring3="";        //Declare a string to concatenate humidity or temperature data
+String datastring2="";             //Declare a string to store the humidity data
+String datastring3="";            //Declare a string to concatenate humidity or temperature data
 
 // Singleton instance of the radio driver
 RH_RF95 rf95;
-float frequency = 868.0;
-unsigned int count = 1;
+float frequency = 868.0;        //Device frequency setting
+unsigned int count = 1;         //Declare a variable for the number of recordse 
 
-char dht_info[50] = {"\0"};
-char dht_hum[50] = {"\0"};
-char dht_tem[50]= {"\0"}; 
-char node_id[3] = {1,1,1};    //LoRa End Node ID 
+char dht_info[50] = {"\0"};     
+char dht_hum[50] = {"\0"};     //Declare a character array to store the humidity data
+char dht_tem[50]= {"\0"};     //Declare a character array to store the temperature data
+
 
 
 float info;
@@ -39,18 +39,10 @@ char  b =",";
 void setup() 
 {
     Serial.begin(9600);
-  //Serial.begin(115200);
-  while (!Serial) ; // Wait for serial port to be available
-  Serial.println("DHT11 Testing is starting now");
-  for(int i = 0;i < 3; i++)
-
-    {
-
-        Serial.print(node_id[i],HEX);
-
-    }
-
-    Serial.println();
+   while (!Serial) ; // Wait for serial port to be available
+    Serial.println("LoRa End Node Example  --");
+    Serial.println("DHT11 Sensor");
+ 
     
   if (!rf95.init())
     Serial.println("init failed");
@@ -105,8 +97,8 @@ void loop()
     data[0] = node_id[0] ;
     data[1] = node_id[1] ;
     data[2] = node_id[2] ;
-    data[4] = dht_hum[1];
-    data[5] = dht_hum[2];
+    data[3] = dht_hum[1];
+    data[4] = dht_hum[2];
    // data[6] = dht_tem[1];
    // data[7] = dth_tem[2];
     
@@ -119,7 +111,7 @@ void loop()
        
     }
     Serial.println();
-unsigned char sendBuf[50]={0};
+  unsigned char sendBuf[50]={0};
 
 
 
