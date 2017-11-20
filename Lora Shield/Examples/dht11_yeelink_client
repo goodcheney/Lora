@@ -18,89 +18,81 @@
 #include <RH_RF95.h>
 dht DHT;
 #define DHT11_PIN A0
-//String datastring1="";            //Declare a string to store the temperautre data
-String datastring2="";             //Declare a string to store the humidity data
-String datastring3="";            //Declare a string to concatenate humidity or temperature data
+String datastring1="";            //Declare a string to store the temperautre data
+String datastring2="";        //Declare a string to store the humidity data
+String datastring3="";        //Declare a string to concatenate humidity or temperature data
 
 // Singleton instance of the radio driver
 RH_RF95 rf95;
-float frequency = 868.0;        //Device frequency setting
-unsigned int count = 1;         //Declare a variable for the number of recordse 
-
-char dht_info[50] = {"\0"};     
-char dht_hum[50] = {"\0"};     //Declare a character array to store the humidity data
-char dht_tem[50]= {"\0"};     //Declare a character array to store the temperature data
-
-
+float frequency = 868.0;
+unsigned int count = 1;
+char dht_info[50] = {"\0"};
+char dht_hum[50] = {"\0"};
+char dht_tem[50]= {"\0"}; 
 
 float info;
-char  b =",";
+float info2,info3;
 
 void setup() 
 {
-    Serial.begin(9600);
-   while (!Serial) ; // Wait for serial port to be available
-    Serial.println("LoRa End Node Example  --");
-    Serial.println("DHT11 Sensor");
- 
+   Serial.begin(9600);
+  while (!Serial) ; // Wait for serial port to be available
+  Serial.println("LoRa End Node Example  --");
+  Serial.println("DHT11 Sensor");
     
   if (!rf95.init())
     Serial.println("init failed");
   // Setup ISM frequency
   rf95.setFrequency(frequency);
-  // Setup Power,dBm
-  //rf95.setSpreadingFactor(9);
- // rf95.setSignalBandwidth(125E3);
- // rf95.setCodingRate4(8);
   rf95.setTxPower(13);
   // Defaults after init are 434.0MHz, 13dBm, Bw = 125 kHz, Cr = 4/5, Sf = 128chips/symbol, CRC on
 }
 
-void dhtRead()
+/*Because Yeelink is a single-sensor single-group data upload, so if you upload the humidity ,put the temperature function commented out .The upload temperature is the same.*/
+
+/*void dhtHum()
 {
-    
-     // double  temperature = DHT.read11(DHT11_PIN);    //Temperature detection
-      double  humidity = DHT.read11(DHT11_PIN);        //Humidity detection
    
-  
-}
-void dhtWrite()
+      double  humidity = DHT.read11(DHT11_PIN);        //Humidity detection
+      datastring2 +=dtostrf(DHT.humidity,2,1,dht_hum);
+      strcat(dht_info,dht_hum);
+
+}*/
+
+void dhtTem()
 {
-      //Convert the read float array to a string array
      
-    // datastring1 +=dtostrf(DHT.temperature,2,1,dht_tem);        
-     datastring2 +=dtostrf(DHT.humidity,2,1,dht_hum);   
-     datastring3 +=dtostrf(info,2,1,dht_info);
+     double  temperature = DHT.read11(DHT11_PIN);    //Temperature detection
+     datastring1 +=dtostrf(DHT.temperature,2,1,dht_tem);        
+     strcat(dht_info,dht_tem);
     
-     memcpy(dht_info,dht_hum,strlen(dht_hum));
-    // memcpy(dht_info,dht_tem,strlen(dht_tem));
      
 }
 
+
 void loop()
 {
-    dhtRead();
-    dhtWrite();
+   // dhtHum()
+    dhtTem()
     Serial.print("###########    ");
     Serial.print("COUNT=");
     Serial.print(count);
     Serial.println("    ###########");
-    Serial.println(" The humidity(%): ");
-   // Serial.println(" The temperature(C): ");
-    Serial.print(dht_hum);
-   // Serial.print(dht_tem);
+   //Serial.println(" The humidity(%): ");     
+   //Serial.println(dht_hum);                  //Print the humidity
+    Serial.println(" The temperature(C): ");  
+    Serial.print(dht_tem);                   //Print the temperature
     Serial.println(" ");
     count++;
     char data[50] = {0};
     int dataLength = 7;
 
-    data[0] = node_id[0] ;
-    data[1] = node_id[1] ;
-    data[2] = node_id[2] ;
-    data[3] = dht_hum[1];
-    data[4] = dht_hum[2];
-   // data[6] = dht_tem[1];
-   // data[7] = dth_tem[2];
+    data[0] = dht_info[0];
+    data[1] = dht_info[1];
+    data[2] = dht_info[2];
+    data[3] = dht_info[3];
+    data[4] = dht_info[4];
+  
     
     Serial.print("Data to be sent: ");
     int i;
@@ -126,8 +118,8 @@ void loop()
         Serial.println();
 
   
-  rf95.send(sendBuf, dataLength+2);//Send LoRa Data
-  rf95.send(dht_info, sizeof(dht_info));
+  rf95.send(sendBuf, dataLength);//Send LoRa Data
+
   
   rf95.waitPacketSent();
   // Now wait for a reply
@@ -158,4 +150,3 @@ void loop()
   }
   delay(5000);
 }
-
