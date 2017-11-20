@@ -6,7 +6,7 @@
 #define BAUDRATE 115200
 // Singleton instance of the radio driver
 RH_RF95 rf95;
-float frequency = 868.0;
+float frequency = 868.0;                               //Device frequency setting
 char buf[RH_RF95_MAX_MESSAGE_LEN];
 
 #define APIKEY        "fab652cb3d89f753602d77e4d856be2e"                  // replace your pachube api key here
@@ -86,10 +86,12 @@ void loop() {
       Console.println(rf95.lastRssi(), DEC);
       
       // Send a reply
-      uint8_t data[] = "Thanks for sending me the message";
+      uint8_t data[] = "Server ACK";
       rf95.send(data, sizeof(data));
       rf95.waitPacketSent();
-      Console.println("Sent a reply");
+      Console.println("Call Finished");
+      Console.println("##################################################");
+      Console.println("");
      
     }
      else
@@ -127,8 +129,7 @@ void sendData() {
   //url += DEVICEID;
   url += 361233;
   url += "/sensor/";
-  //url += SENSORID_TEMPERATURE;
-   url += 412980;
+   url += 412980;  
  //  url += 412984;
   url += "/datapoints";
   // Send the HTTP PUT request
