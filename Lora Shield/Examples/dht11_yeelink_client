@@ -73,7 +73,7 @@ void dhtTem()
 void loop()
 {
    // dhtHum()
-    dhtTem()
+    dhtTem();
     Serial.print("###########    ");
     Serial.print("COUNT=");
     Serial.print(count);
